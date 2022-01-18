@@ -12,7 +12,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         inputDecorationTheme: const InputDecorationTheme(
           border: OutlineInputBorder(),
-          floatingLabelBehavior: FloatingLabelBehavior.always,
         ),
       ),
       home: const QuestionForm(),
@@ -48,14 +47,16 @@ class _QuestionFormState extends State<QuestionForm> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Questions'),
+        ),
         body: Form(
           key: _formKey,
           autovalidateMode: AutovalidateMode.onUserInteraction,
-          child: ListView(
-            padding: const EdgeInsets.all(32), children: [
+          child: ListView(padding: const EdgeInsets.all(32), children: [
             TextFormField(
               controller: _questionCtrl,
-              decoration: const InputDecoration(labelText: 'Question'),
+              decoration: const InputDecoration(labelText: 'Question *'),
               validator: (v) =>
                   v!.isEmpty ? 'Please fill in the Question' : null,
             ),
@@ -82,8 +83,8 @@ class _QuestionFormState extends State<QuestionForm> {
                 .map((entry) => [
                       TextFormField(
                         controller: _optionCtrls[entry.key],
-                        decoration:
-                            InputDecoration(labelText: 'Option ${entry.value}'),
+                        decoration: InputDecoration(
+                            labelText: 'Option ${entry.value}*'),
                         validator: (v) => v!.isEmpty
                             ? 'Please fill in Option ${entry.value}'
                             : null,
@@ -96,8 +97,10 @@ class _QuestionFormState extends State<QuestionForm> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _question['value'] = _questionCtrl.text;
-                    _question['options'] = _optionCtrls.asMap().entries.map(
-                        (entry) => {options[entry.key]: entry.value.text});
+                    _question['options'] = _optionCtrls
+                        .asMap()
+                        .entries
+                        .map((entry) => {options[entry.key]: entry.value.text});
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         margin: EdgeInsets.only(
@@ -131,7 +134,7 @@ class _QuestionFormState extends State<QuestionForm> {
                             color: Colors.redAccent,
                           ),
                           SizedBox(width: 8),
-                          Text('Please fill all required fields above.'),
+                          Text('Please fill all the required fields.'),
                         ]),
                       ),
                     );
