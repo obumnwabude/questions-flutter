@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 void main() => runApp(const MyApp());
@@ -33,6 +34,28 @@ class _QuestionFormState extends State<QuestionForm> {
   final _questionCtrl = TextEditingController();
   final _optionCtrls = options.map((o) => TextEditingController()).toList();
   final _question = {'value': '', 'correct': options[0], 'options': options};
+
+  void showSnackbar(
+      {required IconData icon, required String text, required bool success}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height - 96,
+          right: 16,
+          left: 16,
+        ),
+        behavior: SnackBarBehavior.floating,
+        content: Row(children: [
+          Icon(
+            icon,
+            color: success ? Colors.greenAccent : Colors.redAccent,
+          ),
+          const SizedBox(width: 8),
+          Text(text),
+        ]),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -101,42 +124,19 @@ class _QuestionFormState extends State<QuestionForm> {
                         .asMap()
                         .entries
                         .map((entry) => {options[entry.key]: entry.value.text});
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        margin: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).size.height - 96,
-                          right: 16,
-                          left: 16,
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                        content: Row(children: const [
-                          Icon(
-                            Icons.gpp_good,
-                            color: Colors.greenAccent,
-                          ),
-                          SizedBox(width: 8),
-                          Text('Question updated successfully.'),
-                        ]),
-                      ),
+                    if (kDebugMode) {
+                      print(_question);
+                    }
+                    showSnackbar(
+                      icon: Icons.gpp_good,
+                      text: 'Question updated successfully.',
+                      success: true,
                     );
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        margin: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).size.height - 96,
-                          right: 16,
-                          left: 16,
-                        ),
-                        behavior: SnackBarBehavior.floating,
-                        content: Row(children: const [
-                          Icon(
-                            Icons.error,
-                            color: Colors.redAccent,
-                          ),
-                          SizedBox(width: 8),
-                          Text('Please fill all the required fields.'),
-                        ]),
-                      ),
+                    showSnackbar(
+                      icon: Icons.error,
+                      text: 'Please fill all the required fields.',
+                      success: false,
                     );
                   }
                 },
