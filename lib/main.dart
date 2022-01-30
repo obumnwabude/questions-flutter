@@ -35,8 +35,7 @@ class _QuestionFormState extends State<QuestionForm> {
   final _optionCtrls = options.map((o) => TextEditingController()).toList();
   final _question = {'value': '', 'correct': options[0], 'options': options};
 
-  void showSnackbar(
-      {required IconData icon, required String text, required bool success}) {
+  void showSnackbar({required bool success, required String text}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         margin: EdgeInsets.only(
@@ -47,7 +46,7 @@ class _QuestionFormState extends State<QuestionForm> {
         behavior: SnackBarBehavior.floating,
         content: Row(children: [
           Icon(
-            icon,
+            success ? Icons.gpp_good : Icons.error,
             color: success ? Colors.greenAccent : Colors.redAccent,
           ),
           const SizedBox(width: 8),
@@ -132,15 +131,13 @@ class _QuestionFormState extends State<QuestionForm> {
                       print(_question);
                     }
                     showSnackbar(
-                      icon: Icons.gpp_good,
-                      text: 'Question updated successfully.',
                       success: true,
+                      text: 'Question updated successfully.',
                     );
                   } else {
                     showSnackbar(
-                      icon: Icons.error,
-                      text: 'Please fill all the required fields.',
                       success: false,
+                      text: 'Please fill all the required fields.',
                     );
                   }
                 },
