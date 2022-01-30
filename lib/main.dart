@@ -120,10 +120,14 @@ class _QuestionFormState extends State<QuestionForm> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     _question['value'] = _questionCtrl.text;
-                    _question['options'] = _optionCtrls
-                        .asMap()
-                        .entries
-                        .map((entry) => {options[entry.key]: entry.value.text});
+                    _question['options'] = _optionCtrls.asMap().entries.map(
+                      (entry) {
+                        return {
+                          'index': options[entry.key],
+                          'value': entry.value.text
+                        };
+                      },
+                    );
                     if (kDebugMode) {
                       print(_question);
                     }
