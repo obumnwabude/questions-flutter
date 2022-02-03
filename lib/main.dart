@@ -38,6 +38,7 @@ class QuestionForm extends StatefulWidget {
 }
 
 class _QuestionFormState extends State<QuestionForm> {
+  bool _loading = false;
   final _formKey = GlobalKey<FormState>();
   final _questionCtrl = TextEditingController();
   final _optionCtrls =
@@ -102,78 +103,98 @@ class _QuestionFormState extends State<QuestionForm> {
                         (e) => _optionCtrls[e.key].text = e.value.value);
                   });
                 }
-                return ListView(padding: const EdgeInsets.all(32), children: [
-                  TextFormField(
-                    controller: _questionCtrl,
-                    decoration: const InputDecoration(labelText: 'Question *'),
-                    validator: (v) =>
-                        v!.isEmpty ? 'Please fill in the Question' : null,
-                  ),
-                  const SizedBox(height: 32),
-                  const Text('Correct Option'),
-                  Row(
-                      children: Question.OPTIONS
-                          .map((option) => [
-                                Radio<String>(
-                                  value: option,
-                                  groupValue: _question.correct,
-                                  onChanged: (v) =>
-                                      setState(() => _question.correct = v!),
+                return Stack(
+                  children: [
+                    ListView(padding: const EdgeInsets.all(32), children: [
+                      TextFormField(
+                        controller: _questionCtrl,
+                        decoration:
+                            const InputDecoration(labelText: 'Question *'),
+                        validator: (v) =>
+                            v!.isEmpty ? 'Please fill in the Question' : null,
+                      ),
+                      const SizedBox(height: 32),
+                      const Text('Correct Option'),
+                      Row(
+                          children: Question.OPTIONS
+                              .map((option) => [
+                                    Radio<String>(
+                                      value: option,
+                                      groupValue: _question.correct,
+                                      onChanged: (v) => setState(
+                                          () => _question.correct = v!),
+                                    ),
+                                    Text(option),
+                                    const SizedBox(width: 16)
+                                  ])
+                              .expand((w) => w)
+                              .toList()),
+                      const SizedBox(height: 32),
+                      ...Question.OPTIONS
+                          .asMap()
+                          .entries
+                          .map((entry) => [
+                                TextFormField(
+                                  controller: _optionCtrls[entry.key],
+                                  decoration: InputDecoration(
+                                      labelText: 'Option ${entry.value}*'),
+                                  validator: (v) => v!.isEmpty
+                                      ? 'Please fill in Option ${entry.value}'
+                                      : null,
                                 ),
-                                Text(option),
-                                const SizedBox(width: 16)
+                                const SizedBox(height: 32),
                               ])
-                          .expand((w) => w)
-                          .toList()),
-                  const SizedBox(height: 32),
-                  ...Question.OPTIONS
-                      .asMap()
-                      .entries
-                      .map((entry) => [
-                            TextFormField(
-                              controller: _optionCtrls[entry.key],
-                              decoration: InputDecoration(
-                                  labelText: 'Option ${entry.value}*'),
-                              validator: (v) => v!.isEmpty
-                                  ? 'Please fill in Option ${entry.value}'
-                                  : null,
-                            ),
-                            const SizedBox(height: 32),
-                          ])
-                      .expand((w) => w),
-                  Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (_formKey.currentState!.validate()) {
-                          _question.value = _questionCtrl.text;
-                          _question.options.asMap().entries.forEach((entry) =>
-                              entry.value.value = _optionCtrls[entry.key].text);
-                          _questionsRef
-                              .doc('question')
-                              .set(_question)
-                              .then(
-                                (_) => showSnackbar(
+                          .expand((w) => w),
+                      Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (_formKey.currentState!.validate()) {
+                              _question.value = _questionCtrl.text;
+                              _question.options.asMap().entries.forEach(
+                                  (entry) => entry.value.value =
+                                      _optionCtrls[entry.key].text);
+                              setState(() => _loading = true);
+                              _questionsRef
+                                  .doc('question')
+                                  .set(_question)
+                                  .then((_) {
+                                showSnackbar(
                                   success: true,
                                   text: 'Question updated successfully.',
-                                ),
-                              )
-                              .catchError(
-                                (error) => showSnackbar(
+                                );
+                                setState(() => _loading = false);
+                              }).catchError((error) {
+                                showSnackbar(
                                   success: false,
                                   text: error.toString(),
-                                ),
+                                );
+                                setState(() => _loading = false);
+                              });
+                            } else {
+                              showSnackbar(
+                                success: false,
+                                text: 'Please fill all the required fields.',
                               );
-                        } else {
-                          showSnackbar(
-                            success: false,
-                            text: 'Please fill all the required fields.',
-                          );
-                        }
-                      },
-                      child: const Text('Update'),
-                    )
-                  ]),
-                ]);
+                            }
+                          },
+                          child: const Text('Update'),
+                        )
+                      ]),
+                    ]),
+                    if (_loading)
+                      Column(
+                        children: [
+                          const LinearProgressIndicator(),
+                          Container(
+                            width: MediaQuery.of(context).size.width,
+                            // 84 being height of appBar and progressIndicator
+                            height: MediaQuery.of(context).size.height - 84,
+                            color: const Color(0x91919191),
+                          ),
+                        ],
+                      )
+                  ],
+                );
               },
             )),
       ),
